@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:foodgo/mainScreens/home_screen.dart';
 import 'package:foodgo/route/app_route.dart';
-import 'package:foodgo/splash/splash_screen.dart';
+import 'package:hive_flutter/adapters.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Hive.initFlutter();
+
+  await Hive.openBox('authUser');
+  await Hive.openBox('mobileOtp');
   runApp(const MyApp());
 }
-
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 

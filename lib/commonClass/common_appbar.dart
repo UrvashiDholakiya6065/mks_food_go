@@ -8,7 +8,7 @@ class CommonAppbar extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppBar(
         surfaceTintColor: Colors.white,
-        leadingWidth: 14,
+        leadingWidth: 54,
         elevation: 0,
         backgroundColor: Colors.white,
         actions: [

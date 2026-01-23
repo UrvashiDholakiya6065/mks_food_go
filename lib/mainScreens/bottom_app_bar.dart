@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'package:go_router/go_router.dart';
 
+import '../route/app_route.dart';
+
 class BottomAppBarScreen extends StatelessWidget {
   final Widget child;
 
@@ -19,34 +21,33 @@ class BottomAppBarScreen extends StatelessWidget {
 
         break;
 
-      case '/SearchScreen':
+      case '/UserProfileScreen':
         selectedIndex = 1;
 
         break;
 
-      case '/NotificationScreen':
+      case '/CustomerSupportScreen':
         selectedIndex = 2;
 
         break;
 
-      case '/UserProfileScreen':
+      case '/WishScreen':
         selectedIndex = 3;
-
         break;
     }
-
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: child,
 
       floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(0xffef2a39),
+        backgroundColor: Color(0xffef2a39),
 
-        shape: const CircleBorder(),
+        shape: CircleBorder(),
 
         onPressed: () {
+          appRoute.push('/FoodCartScreen');
         },
-
-        child: const Icon(Icons.add, size: 32, color: Colors.white),
+        child: Icon(Icons.shopping_cart, size: 18, color: Colors.white),
       ),
 
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
@@ -60,14 +61,14 @@ class BottomAppBarScreen extends StatelessWidget {
           child: Container(
             height: 70,
 
-            color: const Color(0xffef2a39),
+            color: Color(0xffef2a39),
 
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
 
               children: [
                 _bottomItem(
-                  icon: Icons.home,
+                  icon: 'assets/bottomBar/home.png',
 
                   index: 0,
 
@@ -77,7 +78,7 @@ class BottomAppBarScreen extends StatelessWidget {
                 ),
 
                 _bottomItem(
-                  icon: Icons.search,
+                  icon: 'assets/bottomBar/person.png',
 
                   index: 1,
 
@@ -89,7 +90,7 @@ class BottomAppBarScreen extends StatelessWidget {
                 const SizedBox(width: 60),
 
                 _bottomItem(
-                  icon: Icons.notifications,
+                  icon: 'assets/bottomBar/vector.png',
 
                   index: 2,
 
@@ -99,7 +100,7 @@ class BottomAppBarScreen extends StatelessWidget {
                 ),
 
                 _bottomItem(
-                  icon: Icons.person,
+                  icon: 'assets/bottomBar/heart.png',
 
                   index: 3,
 
@@ -115,9 +116,8 @@ class BottomAppBarScreen extends StatelessWidget {
     );
   }
 
-
   Widget _bottomItem({
-    required IconData icon,
+    required String icon,
 
     required int index,
 
@@ -136,94 +136,82 @@ class BottomAppBarScreen extends StatelessWidget {
             break;
 
           case 1:
-            context.go('/SearchScreen');
+            context.push('/UserProfileScreen');
 
             break;
 
           case 2:
-            context.go('/NotificationScreen');
+            context.push('/CustomerSupportScreen');
 
             break;
 
           case 3:
-            context.go('/UserProfileScreen');
+            context.push('/WishScreen');
 
             break;
         }
       },
 
-      child: Icon(
-        icon,
-
-        size: 26,
-
-        color: isSelected ? Colors.white : Colors.white70,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Image.asset(
+            icon,
+            height: 18,
+            color: isSelected ? Colors.white : Colors.white70,
+          ),
+          SizedBox(height: 8),
+          isSelected
+              ? CircleAvatar(radius: 2, backgroundColor: Colors.white)
+              : SizedBox(),
+        ],
       ),
     );
   }
 }
 
-
 class BottomBarClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
-    final double fabRadius = 38;
-
+    final double fabRadius = 36;
     final double centerX = size.width / 2;
 
-    final path = Path();
+    Path path = Path();
 
     path.lineTo(0, 0);
 
+    path.lineTo(centerX - fabRadius * 2, 0);
 
-    path.lineTo(centerX - fabRadius * 1.8, 0);
-
-    // Left curve
-
-    path.quadraticBezierTo(
-      centerX - fabRadius * 1.3,
-
+    path.cubicTo(
+      centerX - fabRadius * 1.6,
       0,
-
+      centerX - fabRadius * 1.4,
+      fabRadius * 0.6,
       centerX - fabRadius,
-
-      fabRadius * 0.9,
+      fabRadius,
     );
 
-    // Deep FAB notch
-
-    path.quadraticBezierTo(
-      centerX,
-
-      fabRadius * 1.5,
-
+    path.cubicTo(
+      centerX - fabRadius * 0.5,
+      fabRadius * 1.4,
+      centerX + fabRadius * 0.5,
+      fabRadius * 1.4,
       centerX + fabRadius,
-
-      fabRadius * 0.9,
+      fabRadius,
     );
 
-    // Right curve
-
-    path.quadraticBezierTo(
+    path.cubicTo(
       centerX + fabRadius * 1.4,
-
+      fabRadius * 0.6,
+      centerX + fabRadius * 1.6,
       0,
-
-      centerX + fabRadius * 1.8,
-
+      centerX + fabRadius * 2,
       0,
     );
-
-    // Right flat
 
     path.lineTo(size.width, 0);
-
-    // Bottom rectangle
-
     path.lineTo(size.width, size.height);
-
     path.lineTo(0, size.height);
-
     path.close();
 
     return path;

@@ -1,67 +1,74 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:foodgo/route/app_route.dart';
-import 'package:go_router/go_router.dart';
+import 'package:foodgo/utils/bottom_sheet.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:hive_flutter/adapters.dart';
+
+import '../utils/list.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  // final Map currentUser;
+
+
+  const HomeScreen({super.key,});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final List<String> categories = ["All", "Combos", "Sliders", "Classic"];
 
-  final List<Map<String, dynamic>> foodList = [
-    {
-      'foodName': 'Cheeseburger',
-      'foodSubName': 'Wendy Burger',
-      'foodRate': '4.9',
-      'foodImage': 'assets/home/cheeseBurger.png',
-      'mint': '26 mins',
-      'foodDis':
-          'The Cheeseburger Wendys Burger is a classic fast food burger that packs a punch of flavor in every bite. Made with a juicy beef patty cooked to perfection, its topped with melted American cheese, crispy lettuce, ripe tomato, and crunchy pickles.',
-    },
-    {
-      'foodName': 'Hamburger',
-      'foodSubName': 'Veggie Burger',
-      'foodRate': '4.8',
-      'foodImage': 'assets/home/hamBurger1.png',
-      'mint': '14 mins',
-      'foodDis':
-          'Enjoy our delicious Hamburger Veggie Burger, made with a savory blend of fresh vegetables and herbs, topped with crisp lettuce, juicy tomatoes, and tangy pickles, all served on a soft, toasted bun. ',
-    },
-    {
-      'foodName': 'Hamburger',
-      'foodSubName': 'Chicken Burger',
-      'foodRate': '4.6',
-      'foodImage': 'assets/home/hamBurger2.png',
-      'mint': '42 mins',
-      'foodDis':
-          'Our chicken burger is a delicious and healthier alternative to traditional beef burgers, perfect for those looking for a lighter meal option. Try it today and experience the mouth-watering flavors of our Hamburger Chicken Burger!',
-    },
-    {
-      'foodName': 'Hamburger',
-      'foodSubName': 'Fried Chicken Burger',
-      'foodRate': '4.5',
-      'foodImage': 'assets/home/hamBurger3.png',
-      'mint': '14 mins',
-      'foodDis':
-          'Indulge in our crispy and savory Fried Chicken Burger, made with a juicy chicken patty, hand-breaded and deep-fried to perfection, served on a warm bun with lettuce, tomato, and a creamy sauce.',
-    },
-  ];
+  void searchFood(String query) {
+    setState(() {
+      if (query.isEmpty) {
+        filteredFoodList = foodList;
+      } else {
+        filteredFoodList = foodList.where((food) {
+          final name = food['foodName'].toString().toLowerCase();
+          final subName = food['foodSubName'].toString().toLowerCase();
+          return name.contains(query.toLowerCase()) ||
+              subName.contains(query.toLowerCase());
+        }).toList();
+      }
+    });
+  }
+  List<Map<String, dynamic>> getFilteredFood(String category) {
+    if (category == "All") {
+      return foodList;
+    } else if (category == "Combo") {
+      return foodList.where((item) => item['type'] == 'Combo').toList();
+    } else {
+      return foodList;
+    }
+  }
+  Box? userAuthBox=Hive.box('authUser');
+
+  @override
+  void initState() {
+    super.initState();
+    filteredFoodList = foodList;
+  }
 
   int selectedIndex = 0;
+  // bool isHeart = true;
+  TextEditingController searchController = TextEditingController();
+
+  List<Map<String, dynamic>> filteredFoodList = [];
 
   @override
   Widget build(BuildContext context) {
+    // final currentUserImage = widget.currentUser['image'];
+
     print("Categories length${categories.length}");
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: Colors.white,
       body: SafeArea(
+        bottom: false,
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 12, vertical: 16),
           child: Column(
@@ -75,17 +82,38 @@ class _HomeScreenState extends State<HomeScreen> {
                   SizedBox(
                     height: 50,
                     width: 50,
-                    child: Image.asset('assets/home/profile.png'),
+                    child: GestureDetector(
+                        onTap: (){
+                          appRoute.push('/UserProfileScreen',extra:null,
+                          );
+                        },
+                        // child: currentUserImage != null
+                        //     ? CircleAvatar(
+                        //   radius: 25,
+                        //   backgroundImage: FileImage(File(currentUserImage)),
+                        // )
+                        //     : const
+                   child:  CircleAvatar(
+                          radius: 25,
+                          child: Icon(Icons.person),
+                        ),),
                   ),
                 ],
               ),
-              Text("Order Your Favourite food!",style: GoogleFonts.poppins(fontWeight: FontWeight.w500,fontSize: 16,color: Color(0xff6A6A6A)),),
+              Text(
+                "Order Your Favourite food!",
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 16,
+                  color: Color(0xff6A6A6A),
+                ),
+              ),
               SizedBox(height: 24),
               Row(
                 children: [
                   Expanded(
                     child: Container(
-                      height: 46,
+                      height: 42,
                       padding: EdgeInsets.symmetric(horizontal: 16),
                       decoration: BoxDecoration(
                         color: Colors.white,
@@ -100,13 +128,18 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       child: Row(
                         children: [
-                          Image.asset('assets/home/search.png',height: 20,),
-                          SizedBox(width: 14,),
+                          Image.asset('assets/home/search.png', height: 20),
+                          SizedBox(width: 14),
                           Expanded(
                             child: TextFormField(
+                              controller: searchController,
+                              onChanged: searchFood,
                               decoration: InputDecoration(
                                 hintText: "Search",
-                                hintStyle: TextStyle(color: Color(0xff3C2F2F,),fontWeight: FontWeight.w500),
+                                hintStyle: TextStyle(
+                                  color: Color(0xff3C2F2F),
+                                  fontWeight: FontWeight.w500,
+                                ),
                                 border: InputBorder.none,
                               ),
                             ),
@@ -119,7 +152,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   SizedBox(width: 12),
 
                   Container(
-                    height: 50,
+                    height: 42,
                     width: 50,
                     decoration: BoxDecoration(
                       color: Color(0xffef2a39),
@@ -137,39 +170,50 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
 
               SizedBox(height: 14),
+
               SizedBox(
-                height: 66,
+                height: 60,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   itemCount: categories.length,
                   itemBuilder: (context, index) {
+
                     final isSelected = index == selectedIndex;
+
                     print(
                       "index: $index, selectedIndex: $selectedIndex, isSelected: $isSelected",
                     );
-
                     return Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: GestureDetector(
                         onTap: () {
                           setState(() {
                             selectedIndex = index;
+                            if (categories[index] == "All") {
+                              filteredFoodList = foodList;
+                            } else if (categories[index] == "Combos") {
+                              filteredFoodList =
+                                  foodList.where((e) => e['type'] == 'Combo').toList();
+                            }
+
                           });
                         },
                         child: Container(
                           decoration: BoxDecoration(
-                            color: isSelected ? Color(0xffef2a39) : Color(0xffF3F4F6),
+                            color: isSelected
+                                ? Color(0xffef2a39)
+                                : Color(0xffF3F4F6),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           alignment: Alignment.center,
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 24,
-                          ),
+                          padding: EdgeInsets.symmetric(horizontal: 24),
                           child: Text(
                             categories[index],
                             style: GoogleFonts.inter(
-                              color: isSelected ? Colors.white : Color(0xff6A6A6A),
-                              fontWeight: FontWeight.bold
+                              color: isSelected
+                                  ? Colors.white
+                                  : Color(0xff6A6A6A),
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
@@ -179,83 +223,116 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               Expanded(
-                child: GridView.builder(
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    childAspectRatio: 0.2,
-                    crossAxisCount: 2,
-                    mainAxisSpacing: 12,
-                    crossAxisSpacing: 1,
-                    mainAxisExtent: 220,
-                  ),
-                  itemCount: foodList.length,
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.all(4.0),
-                      child: GestureDetector(
-                        onTap: () {
-                          appRoute.push(
-                            '/FoodDetailScreen',
-                            extra: foodList[index],
+                child: filteredFoodList.isEmpty
+                    ? Center(child: Text("No items match your search"))
+                    : GridView.builder(
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          childAspectRatio: 0.65,
+                          crossAxisCount: 2,
+                          mainAxisSpacing: 12,
+                          crossAxisSpacing: 12,
+                          mainAxisExtent: 220,
+                        ),
+                        itemCount: filteredFoodList.length,
+                        itemBuilder: (context, index) {
+                          return Padding(
+                            padding: const EdgeInsets.all(4.0),
+                            child: GestureDetector(
+                              onTap: () {
+                                FocusScope.of(context).unfocus();
+                                openFoodBottomSheet(context,filteredFoodList,index);
+                                // appRoute.push(
+                                //   '/FoodDetailScreen',
+                                //   extra: filteredFoodList[index],
+                                // );
+                              },
+                              child: Card(
+                                shadowColor: Colors.black.withOpacity(0.34),
+                                color: Colors.white,
+                                elevation: 1,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.all(12.0),
+                                        child: Center(
+                                          child: Image(
+                                            image: AssetImage(
+                                              filteredFoodList[index]['foodImage'],
+                                            ),
+                                            fit: BoxFit.contain,
+                                            height: 78,
+                                          ),
+                                        ),
+                                      ),
+                                      Text(
+                                        filteredFoodList[index]['foodName'],
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      Text(
+                                        filteredFoodList[index]['foodSubName'],
+                                        style: TextStyle(fontSize: 12),
+                                      ),
+                                      SizedBox(height: 6),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Icon(Icons.star, color: Colors.amber,size: 14,),
+                                              SizedBox(width: 4),
+                                              Text(
+                                                filteredFoodList[index]['foodRate'],
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          // SizedBox(width: 42),
+                                          GestureDetector(
+                                            onTap: () {
+                                              setState(() {
+                                                final items=filteredFoodList[index];
+                                                items['isHeart'] = !items['isHeart'] ;
+                                                if(items['isHeart']){
+                                                  wishList.add(items);
+                                                }else{
+                                                  wishList.remove(filteredFoodList[index]);
+                                                }
+                                              });
+                                            },
+                                            child: Icon(
+                                                filteredFoodList[index]['isHeart']
+                                                    ? CupertinoIcons.heart_fill
+                                                    : CupertinoIcons.heart,
+
+                                                color: filteredFoodList[index]['isHeart']
+                                                    ? Colors.red:Colors.black
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
                           );
                         },
-                        child: Card(
-                          shadowColor: Colors.black.withOpacity(0.34),
-                          color: Colors.white,
-                          elevation: 1,
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.all(20.0),
-                                  child: Center(
-                                    child: Image(
-                                      image: AssetImage(
-                                        foodList[index]['foodImage'],
-                                      ),
-                                      fit: BoxFit.contain,
-                                      height: 78,
-                                    ),
-                                  ),
-                                ),
-                                Text(
-                                  foodList[index]['foodName'],
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                Text(
-                                  foodList[index]['foodSubName'],
-                                  style: TextStyle(fontSize: 12),
-                                ),
-                                SizedBox(height: 6),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Icon(Icons.star, color: Colors.amber),
-                                    SizedBox(width: 4),
-                                    Text(
-                                      foodList[index]['foodRate'],
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                    SizedBox(width: 42),
-                                    Icon(CupertinoIcons.heart),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
                       ),
-                    );
-                  },
-                ),
               ),
             ],
           ),

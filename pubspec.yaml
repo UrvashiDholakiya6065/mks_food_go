@@ -37,6 +37,18 @@ dependencies:
   flutter_svg:
   google_fonts:
   go_router:
+  confetti:
+  logger:
+  razorpay_flutter:
+  hive_flutter: ^1.1.0
+  #Used for open camera and gallery
+  image_picker:
+  #User for manage session this time user for email store
+  shared_preferences:
+  #Userd for otp
+  pinput:
+
+
 
 dev_dependencies:
   flutter_test:
@@ -48,6 +60,7 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -66,6 +79,12 @@ flutter:
      - assets/home/
      - assets/cart/
      - assets/payment/
+     - assets/bottomBar/
+     - assets/popUp/
+     - assets/profile/
+     - assets/msg/
+     - assets/auth/
+     - assets/comboBurgers/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

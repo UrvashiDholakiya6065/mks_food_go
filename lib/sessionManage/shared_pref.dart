@@ -1,58 +1,67 @@
-import 'package:mks_task2_tradingbuddy/screen/commonWidgets/common_field_controllers.dart';
-import 'package:mks_task2_tradingbuddy/sesstionManage/sesstion_keys.dart';
+import 'package:foodgo/route/app_route.dart';
+import 'package:foodgo/sessionManage/sesstion_keys.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SharedPref {
-  Future<void> setUserDataPref() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString(
-      SesstionKeys.email,
-      CommonFieldControllers.loginEmailController.text,
-    );
-    await prefs.setString(
-      SesstionKeys.password,
-      CommonFieldControllers.loginPasswordController.text,
-    );
-    print("set email shaared pref  ${prefs.getString(SesstionKeys.email)}");
-    print(
-      "set password shaared pref  ${prefs.getString(SesstionKeys.password)}",
-    );
+  // Future<void> setUserDataPref({required String loginEmailController}) async {
+  //   final SharedPreferences prefs = await SharedPreferences.getInstance();
+  //   await prefs.setString(
+  //     SesstionKeys.email,
+  //     loginEmailController,
+  //   );
+  //
+  //   print("set email shaared pref  ${prefs.getString(SesstionKeys.email)}");
+  //
+  // }
+  Future<void> setUserDataPref({required String email}) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(SesstionKeys.email, email);
+    print("Set email in pref ::::---${ prefs.get(SesstionKeys.email) }");
+    await prefs.setBool(SesstionKeys.isLoggedIn, true);
+  }
+  Future<void> setUserMobileNum({required String mobileNum}) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(SesstionKeys.mobileKey, mobileNum);
+    print("Set mobileNumber in pref ::::---${ prefs.get(SesstionKeys.mobileKey) }");
+    await prefs.setBool(SesstionKeys.isLoggedIn, true);
+  }
+  Future<String?> getUserEmail() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(SesstionKeys.email);
+  }
+  Future<String?> getProfileData() async {
+    final pref = await SharedPreferences.getInstance();
+    return pref.getString('email');
+  }
+  Future<String?> getUserMobileNum() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(SesstionKeys.mobileKey);
+  }
+  Future<bool> isLoggedIn() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(SesstionKeys.isLoggedIn) ?? false;
   }
 
-  Future<bool> getUserDataPref() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final email = prefs.getString(SesstionKeys.email);
-    final password = prefs.getString(SesstionKeys.password);
-    print("get email shared pref  ${prefs.getString(SesstionKeys.email)}");
-    print(
-      "get password shared pref  ${prefs.getString(SesstionKeys.password)}",
-    );
-    return email != null &&
-        email.isNotEmpty &&
-        password != null &&
-        password.isNotEmpty;
-  }
 
   Future<void> logoutPref() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final email = await prefs.remove(SesstionKeys.email);
-    final password = await prefs.remove(SesstionKeys.password);
+
 
     print("remove email shared pref  $email");
-    print("remove password shared pref  $password");
   }
 
-  Future<void> setTheme(bool theme) async {
+  Future<void> logoutPrefMobilNum() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(
-      SesstionKeys.isTheme,
-      theme,
-    );
-    print("set theme shaared pref  ${prefs.getBool(SesstionKeys.isTheme)}");
+    final mobile = await prefs.remove(SesstionKeys.mobileKey);
+    final logedIn = await prefs.remove(SesstionKeys.isLoggedIn);
+    await prefs.clear();
+    appRoute.go('/LoginWithOtp');
+
+    print("remove mobileKey shared pref  $mobile");
+    print("remove logedIn shared pref  $logedIn");
+    print("Session cleared");
+
   }
-  Future<bool> getTheme() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    return  prefs.getBool(
-      SesstionKeys.isTheme)??false;
-  }
+  //
 }
